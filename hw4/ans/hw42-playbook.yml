@@ -1,0 +1,56 @@
+---
+- hosts:  hw42
+  become: true
+  vars:
+    mysql_root_password: "Password1"
+
+  tasks:
+    - name: Install Apache2 and PHP Packages
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'apache2', 'php', 'php-common', 'php-mysql', 'php-cli', 'libapache2-mod-php' ]
+      when: ansible_os_family == "Debian"
+
+    - name: Start Apache HTTP Server and Enable it on Ubuntu
+      service: name=apache2 state=started enabled=true
+      when: ansible_os_family == "Debian"
+
+    - name: Copy files to Web fodler
+      shell: cp /home/vagrant/task2/web/* /var/www/html/
+      when: ansible_os_family == "Debian"
+
+    - name: restart apache
+      service: name=apache2 state=restarted
+      when: ansible_os_family == "Debian"
+
+    - name: Install MariaDB Server on CentOS
+      dnf: name={{ item }},mariadb-server state=present
+      loop: [ 'mariadb-server', 'python3-PyMySQL' ]
+      when: ansible_os_family == "RedHat"
+
+    - name: Start and enable MariaDB on CentOS
+      service: name=mariadb state=started enabled=true
+      when: ansible_os_family == "RedHat"
+
+    - name: Install MariaDB Server
+      dnf: name=mariadb,mariadb-server state=present
+      when: ansible_os_family == "RedHat"
+
+    - name: Start and enable MariaDB
+      service: name=mariadb state=started enabled=true
+      when: ansible_os_family == "RedHat"
+
+    - name: Create and Import DB
+      shell: mysql -u root < /home/vagrant/task2/db/db_setup.sql
+      when: ansible_os_family == "RedHat"
+
+    - name: Allow MySQL service in the firewall
+      shell: firewall-cmd --permanent --add-service=mysql; firewall-cmd --reload
+      when: ansible_os_family == "RedHat"
+
+    - name: Allow MySQL service in the firewall 3306/tcp
+      shell: firewall-cmd --permanent --add-port=3306/tcp; firewall-cmd --reload
+      when: ansible_os_family == "RedHat"
+
+    - name: Allow MySQL service connect from remote host mariadb-cfgs
+      shell: sed -i 's/#bind-address./bind-address/g' /etc/my.cnf.d/mariadb-server.cnf
+      when: ansible_os_family == "RedHat"

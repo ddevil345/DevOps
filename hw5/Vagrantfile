@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.ssh.insert_key = false
+
+  config.vm.define "slave" do |slave|
+    slave.vm.box="generic/ubuntu2004"
+    slave.vm.hostname = "slave.hw5.local"
+    slave.vm.synced_folder "files/", "/home/vagrant/files/"
+    slave.vm.network "private_network", ip: "192.168.12.11"
+    slave.vm.provision "shell", path: "./init.sh"
+    slave.vm.provision "shell", path: "./slave.sh"
+    slave.vm.network "forwarded_port", guest: 80, host: 8082, auto_correct: true
+    slave.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
+        vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+  config.vm.define "master" do |master|
+    master.vm.box="generic/ubuntu2004"
+    master.vm.hostname = "master.hw5.local"
+    master.vm.synced_folder "files/", "/home/vagrant/files/"
+    master.vm.network "private_network", ip: "192.168.12.10"
+    master.vm.provision "shell", path: "./init.sh"
+    master.vm.provision "shell", path: "./master.sh"
+    master.vm.network "forwarded_port", guest: 8080, host: 8080, auto_correct: true
+    master.vm.network "forwarded_port", guest: 80, host: 80, auto_correct: true
+    $script = <<-SCRIPT
+    sudo cp /home/vagrant/files/password.txt /var/lib/jenkins/password.txt
+    sudo -S -u jenkins whoami
+    sudo -S -u jenkins cd /var/lib/jenkins
+    sudo -S -u jenkins ssh-keygen -t rsa -f /var/lib/jenkins/.ssh/id_rsa -q -P ""
+    sudo -S -u jenkins ssh-keyscan 192.168.12.11 >> /var/lib/jenkins/.ssh/known_hosts
+    sudo -S -u jenkins sshpass -f /var/lib/jenkins/password.txt  ssh-copy-id jenkins@192.168.12.11
+    SCRIPT
+    master.vm.provision "shell", inline: $script, privileged: false
+
+    master.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", "4096"]
+        vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+
+end

@@ -1,0 +1,27 @@
+docker ansible_host=192.168.12.101
+web ansible_host=192.168.12.102
+db ansible_host=192.168.12.103
+
+
+[srv]
+192.168.12.101
+192.168.12.102
+192.168.12.103
+
+[srv:vars]
+ansible_user=vagrant
+ansible_ssh_pass=vagrant
+
+[dockers]
+docker
+
+[webs]
+web
+
+[dbs]
+db
+
+[hw42]
+web
+db
+

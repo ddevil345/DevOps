@@ -1,0 +1,49 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.ssh.insert_key = false
+
+  config.vm.define "vm01" do |vm01|
+    vm01.vm.box="generic/ubuntu2004"
+    vm01.vm.hostname = "vm01.hw3.local"
+    vm01.vm.synced_folder "hw3/", "/home/vagrant/hw3"
+    vm01.vm.network "public_network", bridge: "eth0", ip: "192.168.12.100"
+    vm01.vm.provision "shell", path: "./init.sh"
+    vm01.vm.provision "shell", path: "./manager.sh"
+    vm01.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
+        vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+
+  config.vm.define "vm02" do |vm02|
+    vm02.vm.box="generic/ubuntu2004"
+    vm02.vm.hostname = "vm02.hw3.local"
+    vm02.vm.synced_folder "hw3/", "/home/vagrant/hw3"
+    vm02.vm.network "public_network", bridge: "eth0", ip: "192.168.12.101"
+    vm02.vm.provision "shell", path: "./init.sh"
+    vm02.vm.provision "shell", path: "./worker.sh"
+    vm02.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
+        vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+
+  config.vm.define "vm03" do |vm03|
+    vm03.vm.box="generic/ubuntu2004"
+    vm03.vm.hostname = "vm03.hw3.local"
+    vm03.vm.synced_folder "hw3/", "/home/vagrant/hw3"
+    vm03.vm.network "public_network", bridge: "eth0", ip: "192.168.12.102"
+    vm03.vm.provision "shell", path: "./init.sh"
+    vm03.vm.provision "shell", path: "./worker.sh"
+    vm03.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
+        vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+
+
+end
+ 

@@ -1,0 +1,74 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.ssh.insert_key = false
+
+
+  config.vm.define "docker" do |docker|
+    docker.vm.box="generic/ubuntu2004"
+    docker.vm.hostname = "docker.hw4.local"
+    docker.vm.synced_folder "task1/", "/home/vagrant/task1"
+    docker.vm.network "private_network", ip: "192.168.12.101"
+    docker.vm.provision "shell", path: "./docker.sh"
+    docker.vm.network "forwarded_port", guest: 8080, host: 8081, auto_correct: true
+    docker.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
+        vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+
+  config.vm.define "web" do |web|
+    web.vm.box="generic/ubuntu2004"
+    web.vm.hostname = "web.hw4.local"
+    web.vm.synced_folder "task2/", "/home/vagrant/task2"
+    web.vm.network "private_network", ip: "192.168.12.102"
+    web.vm.provision "shell", path: "./web.sh"
+    web.vm.network "forwarded_port", guest: 80, host: 8082, auto_correct: true
+    web.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
+        vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+
+  config.vm.define "db" do |db|
+    db.vm.box="shekeriev/centos-8-minimal"
+    db.vm.hostname = "db.hw4.local"
+    db.vm.synced_folder "task2/", "/home/vagrant/task2"
+    db.vm.network "private_network", ip: "192.168.12.103"
+    db.vm.provision "shell", path: "./db.sh"
+    db.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
+        vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+
+  config.vm.define "ans" do |ans|
+    ans.vm.box="generic/ubuntu2004"
+    ans.vm.hostname = "ans.hw4.local"
+    ans.vm.synced_folder "ans/", "/home/vagrant/"
+    ans.vm.network "private_network",  ip: "192.168.12.100"
+    ans.vm.provision "shell", path: "./ans.sh"
+    $script = <<-SCRIPT
+    sudo cp /home/vagrant/ansible.cfg  /etc/ansible/ansible.cfg
+    sudo cp /home/vagrant/hosts  /etc/ansible/hosts
+    ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -P ""
+    ssh-keyscan 192.168.12.101 >> ~/.ssh/known_hosts
+    ssh-keyscan 192.168.12.102 >> ~/.ssh/known_hosts
+    ssh-keyscan 192.168.12.103 >> ~/.ssh/known_hosts
+    sshpass -f /home/vagrant/password.txt ssh-copy-id vagrant@192.168.12.101
+    sshpass -f /home/vagrant/password.txt ssh-copy-id vagrant@192.168.12.102
+    sshpass -f /home/vagrant/password.txt ssh-copy-id vagrant@192.168.12.103
+    sudo ansible-playbook hw41-playbook.yml
+    sudo ansible-playbook hw42-playbook.yml
+    SCRIPT
+    ans.vm.provision "shell", inline: $script, privileged: false
+    ans.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
+        vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+
+
+end

@@ -1,0 +1,17 @@
+---
+- name: Install Docker
+  become: true
+  hosts: dockers
+  tasks:
+    - name: Install docker...
+      apt: name={{ item }}  state=latest
+      loop: [ 'docker', 'docker.io']
+      when: ansible_os_family == "Debian"
+
+    - name: Add vagrant docker group
+      shell: "adduser vagrant docker"
+      when: ansible_os_family == "Debian"
+
+    - name: Run Nginx Server
+      shell: "docker run --name docker_nginx -d -p 8080:80 nginx:1.13-alpine"
+      when: ansible_os_family == "Debian"
