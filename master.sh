@@ -1,7 +1,6 @@
 #!/bin/bash
 echo "--- Start  Master script ----"
-echo "--- mkdir /vagrant/ ----"
-sudo mkdir /vagrant
+
 echo "Initialize Kubernetes Cluster"
 
 $CLIP=$(ip addr show | grep -o "inet 192\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*")
