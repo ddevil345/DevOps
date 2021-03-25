@@ -1,0 +1,6 @@
+127.0.0.1       localhost
+192.168.10.120    k8s-master.home.lan          k8s-master
+192.168.10.121    k8s-node01.home.lan          k8s-node01
+192.168.10.122    k8s-node01.home.lan          k8s-node02
+192.168.10.123    k8s-node01.home.lan          k8s-node03
+192.168.10.124    k8s-node01.home.lan          k8s-node04
