@@ -3,7 +3,7 @@ echo "--- Start  Master script ----"
 
 echo "Initialize Kubernetes Cluster"
 
-$CLIP=$(ip addr show | grep -o "inet 192\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*")
+CLIP=$(ip addr show | grep -o "inet 192\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*")
 
 echo "* Initialize Kubernetes cluster ..."
 sudo kubeadm init --apiserver-advertise-address=$CLIP --pod-network-cidr 10.244.0.0/16
@@ -60,7 +60,7 @@ echo "* Save the user token ..."
 kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}') > /vagrant/admin-user-token.txt
 
 echo "gen ramdom token"
-TOKEN=$(date +%s | sha256sum | base64 | head -c 32 ; echo)
+TOKEN=$(date +%s | sha256sum | base64 | head -c 32)
 
 echo "* Create custom token ..."
 kubeadm token create $TOKEN
